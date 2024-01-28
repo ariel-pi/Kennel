@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Booking History - Dog Boarding{% endblock %}
+
+{% block content %}
+    <section>
+        <h2>Booking History</h2>
+        <p>View your past and current booking requests.</p>
+    </section>
+
+    <section>
+        {% if bookings %}
+            <ul>
+                {% for booking in bookings %}
+                    <li>
+                        <h3>{{ booking.boarding_house.name }}</h3>
+                        <p>Check-in: {{ booking.check_in_date }}</p>
+                        <p>Check-out: {{ booking.check_out_date }}</p>
+                        <p>Status: {{ booking.status }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No booking history found.</p>
+        {% endif %}
+    </section>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}User Profile - Dog Boarding{% endblock %}
+
+{% block content %}
+    <section>
+        <h2>User Profile</h2>
+        <p>View and edit your profile information.</p>
+    </section>
+
+    <section>
+        <form method="post" action="{% url 'user_profile' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Update Profile</button>
+        </form>
+    </section>
+{% endblock %}

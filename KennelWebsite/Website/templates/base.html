@@ -1,0 +1,48 @@
+<!-- base.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Your Site Title{% endblock %}</title>
+    <!-- Add your CSS and JS links here -->
+</head>
+<body>
+
+<header>
+    <h1>Your Site</h1>
+    <!-- Add any common header elements here -->
+</header>
+
+<nav>
+    <ul>
+        <li><a href="{% url 'home' %}">Home</a></li>
+        <li><a href="{% url 'boardinghouse_list' %}">Boarding Houses</a></li>
+
+        {% if user.is_authenticated %}
+            <li>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit">Logout</button>
+                </form>
+            </li>
+        {% else %}
+            <li>
+                <a href="{% url 'login' %}" >Login</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<footer>
+    <!-- Add your footer content here -->
+    <p>&copy; 2024 Your Site. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

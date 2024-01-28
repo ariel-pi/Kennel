@@ -1,0 +1,12 @@
+<!-- add_boardinghouse.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Add a New BoardingHouse</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Add BoardingHouse</button>
+    </form>
+{% endblock %}
