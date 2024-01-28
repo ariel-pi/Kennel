@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Booking, Profile, BoardingHouse
+from .models import Booking,  BoardingHouse #Profile,
 from django.contrib.auth.models import User, Group
 
 class BookingForm(forms.ModelForm):
@@ -10,20 +10,20 @@ class BookingForm(forms.ModelForm):
         fields = ['check_in_date', 'check_out_date']
 
 
-class UserProfileForm(forms.ModelForm):
-    class Meta:
-        model = Profile
-        fields = ['first_name', 'last_name', 'phone_number', 'address']
-        # fields = ['first_name', 'last_name', 'phone_number', 'address', 'profile_picture']
+# class UserProfileForm(forms.ModelForm):
+#     class Meta:
+#         model = Profile
+#         fields = ['first_name', 'last_name', 'phone_number', 'address']
+#         # fields = ['first_name', 'last_name', 'phone_number', 'address', 'profile_picture']
 
 
-    widgets = {
-        'address': forms.Textarea(attrs={'rows': 3}),
-    }
+#     widgets = {
+#         'address': forms.Textarea(attrs={'rows': 3}),
+#     }
 
-    # labels = {
-    #     'profile_picture': 'Profile Picture',
-    # }
+#     # labels = {
+#     #     'profile_picture': 'Profile Picture',
+#     # }
 
 
 

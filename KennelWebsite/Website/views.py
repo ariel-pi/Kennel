@@ -1,107 +1,125 @@
+# views.py
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+
 from .models import BoardingHouse, Booking
-from .forms import BookingForm ,UserProfileForm, BoardingHouseForm
-from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import logout
-from django.shortcuts import redirect
-from django.shortcuts import get_object_or_404, render
-from django.http import HttpResponseBadRequest
-from .forms import RegistrationForm
+from .forms import BookingForm,  BoardingHouseForm, RegistrationForm #,UserProfileForm
 from django.contrib.auth import login
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseBadRequest
+from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 
-def home(request):
-    return render(request, 'home.html')
+class HomeView(View):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'home.html')
 
-def boardinghouse_list(request):
-    boardinghouses = BoardingHouse.objects.all()
-    return render(request, 'boardinghouse_list.html', {'boardinghouses': boardinghouses})
+class BoardinghouseListView(View):
+    def get(self, request, *args, **kwargs):
+        boardinghouses = BoardingHouse.objects.all()
+        return render(request, 'boardinghouse_list.html', {'boardinghouses': boardinghouses})
 
-def boardinghouse_detail(request, boardinghouse_id):
-    boardinghouse = BoardingHouse.objects.get(id=boardinghouse_id)
-
-    if request.method == 'POST':
-        form = BookingForm(request.POST)
-        if form.is_valid():
-            booking = form.save(commit=False)
-            booking.user = request.user
-            booking.boarding_house = boardinghouse
-            booking.save()
-            messages.success(request, 'Booking request sent successfully!')
-            return redirect('boardinghouse_list')
-    else:
+class BoardinghouseDetailView(View):
+    def get(self, request, boardinghouse_id, *args, **kwargs):
+        boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
         form = BookingForm()
 
-    return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
+        return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
 
-def register(request):
-    if request.method == 'POST':
+    def post(self, request, boardinghouse_id, *args, **kwargs):
+        boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
+        form = BookingForm(request.POST)
+
+        if form.is_valid():
+            check_in_date = form.cleaned_data['check_in_date']
+            check_out_date = form.cleaned_data['check_out_date']
+
+            # Perform any additional validation or processing here
+
+            # Create a Booking instance
+            booking = Booking.objects.create(
+                user=request.user,
+                boarding_house=boardinghouse,
+                check_in_date=check_in_date,
+                check_out_date=check_out_date,
+                status='pending'  # You may set the initial status as needed
+            )
+
+            messages.success(request, 'Booking successful! Check your booking history for details.')
+            return redirect('boardinghouse_list')
+
+        # If form is not valid, re-render the page with the form and error messages
+        return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
+
+class RegisterView(View):
+    def get(self, request, *args, **kwargs):
+        form = RegistrationForm()
+        return render(request, 'registration/register.html', {'form': form})
+
+    def post(self, request, *args, **kwargs):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
             return redirect('home')
-    else:
-        form = RegistrationForm()
+        return render(request, 'registration/register.html', {'form': form})
 
-    return render(request, 'registration/register.html', {'form': form})
-def custom_logout(request):
-    logout(request)
-    return redirect('Website:home')  # Redirect to the home page of the 'Website' app
-@login_required
-def booking_history(request):
-    bookings = Booking.objects.filter(user=request.user)
-    return render(request, 'booking_history.html', {'bookings': bookings})
+class BookingHistoryView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        bookings = Booking.objects.filter(user=request.user)
+        return render(request, 'booking_history.html', {'bookings': bookings})
 
-@login_required
-def user_profile(request):
-    if request.method == 'POST':
+class UserProfileView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        form = UserProfileForm(instance=request.user.profile)
+        return render(request, 'profile.html', {'form': form})
+
+    def post(self, request, *args, **kwargs):
         form = UserProfileForm(request.POST, instance=request.user.profile)
         if form.is_valid():
             form.save()
             messages.success(request, 'Profile updated successfully!')
             return redirect('user_profile')
-    else:
-        form = UserProfileForm(instance=request.user.profile)
+        return render(request, 'profile.html', {'form': form})
 
-    return render(request, 'profile.html', {'form': form})
+class OwnerDashboardView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.groups.filter(name='Boardinghouse Owner').exists()
 
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        boarding_houses = BoardingHouse.objects.filter(user=user)
+        bookings = Booking.objects.filter(boarding_house__in=boarding_houses)
+        context = {'bookings': bookings}
+        return render(request, 'owner_dashboard.html', context)
 
-@login_required
-def owner_dashboard(request):
-    user = request.user
-    boarding_houses = BoardingHouse.objects.filter(user=user)
-    bookings = Booking.objects.filter(boarding_house__in=boarding_houses)
+class UpdateBookingStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.groups.filter(name='Boardinghouse Owner').exists()
 
-    context = {'bookings': bookings}
-    return render(request, 'owner_dashboard.html', context)
-
-@login_required
-def update_booking_status(request, booking_id):
-    if request.method == 'POST':
+    def post(self, request, booking_id, *args, **kwargs):
         new_status = request.POST.get('status')
         if new_status in dict(Booking.STATUS_CHOICES):
             booking = Booking.objects.get(id=booking_id)
             booking.status = new_status
             booking.save()
             return redirect('owner_dashboard')
-    return HttpResponseBadRequest('Invalid form submission')
+        return HttpResponseBadRequest('Invalid form submission')
 
-@login_required
-def add_boardinghouse(request):
-    if request.method == 'POST':
+class AddBoardinghouseView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.groups.filter(name='Boardinghouse Owner').exists()
+
+    def get(self, request, *args, **kwargs):
+        form = BoardingHouseForm()
+        return render(request, 'add_boardinghouse.html', {'form': form})
+
+    def post(self, request, *args, **kwargs):
         form = BoardingHouseForm(request.POST)
         if form.is_valid():
             boardinghouse = form.save(commit=False)
-            # Assuming you want to associate the new boardinghouse with the logged-in user
             boardinghouse.user = request.user
-            boardinghouse.user = request.user  # Set the user field
             boardinghouse.save()
-            return redirect('boardinghouse_list')  # Redirect to the list of boardinghouses after successful addition
-    else:
-        form = BoardingHouseForm()
-
-    return render(request, 'add_boardinghouse.html', {'form': form})
+            return redirect('boardinghouse_list')
+        return render(request, 'add_boardinghouse.html', {'form': form})
