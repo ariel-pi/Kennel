@@ -1,4 +1,5 @@
 <!-- base.html -->
+{% load custom_filters %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -21,17 +22,25 @@
         <li><a href="{% url 'boardinghouse_list' %}">Boarding Houses</a></li>
 
         {% if user.is_authenticated %}
-            <li>
-                <form method="post" action="{% url 'logout' %}">
-                    {% csrf_token %}
-                    <button type="submit">Logout</button>
-                </form>
-            </li>
-        {% else %}
-            <li>
-                <a href="{% url 'login' %}" >Login</a>
-            </li>
+        {% if request.user|has_group:"Customer" %}
+            <li><a href="{% url 'booking_history' %}">Booking History</a></li>
+        {% elif request.user|has_group:"Boardinghouse Owners"  %}
+            <li><a href="{% url 'owner_dashboard' %}">Owner Dashboard</a></li>
         {% endif %}
+        <li>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+        </li>
+    {% else %}
+        <li>
+            <a href="{% url 'login' %}" >Login</a>
+        </li>
+        <li>
+            <a href="{% url 'register' %}" >Sign Up</a>
+        </li>
+    {% endif %}
     </ul>
 </nav>
 

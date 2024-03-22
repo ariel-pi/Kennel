@@ -2,13 +2,15 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 
-from .models import BoardingHouse, Booking
-from .forms import BookingForm,  BoardingHouseForm, RegistrationForm #,UserProfileForm
+from .models import BoardingHouse, Booking, Profile
+from .forms import BookingForm,  BoardingHouseForm, RegistrationForm ,ProfileForm
 from django.contrib.auth import login
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseBadRequest
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib import messages
+
 
 
 class HomeView(View):
@@ -62,6 +64,9 @@ class RegisterView(View):
         if form.is_valid():
             user = form.save()
             login(request, user)
+            
+            # create a profile instance for the user
+            Profile.objects.create(user=user)
             return redirect('home')
         return render(request, 'registration/register.html', {'form': form})
 
@@ -70,33 +75,35 @@ class BookingHistoryView(LoginRequiredMixin, View):
         bookings = Booking.objects.filter(user=request.user)
         return render(request, 'booking_history.html', {'bookings': bookings})
 
-class UserProfileView(LoginRequiredMixin, View):
-    def get(self, request, *args, **kwargs):
-        form = UserProfileForm(instance=request.user.profile)
-        return render(request, 'profile.html', {'form': form})
+class ProfileView(LoginRequiredMixin, View):
+    def get(self, request):
+        profile = request.user.profile
+        form = ProfileForm(instance=profile)
+        return render(request, 'profile.html', {'form': form, 'profile': profile})
 
-    def post(self, request, *args, **kwargs):
-        form = UserProfileForm(request.POST, instance=request.user.profile)
+    def post(self, request):
+        #TODO: remove the profile picture if the user wants to
+        # or if the user wants to update the profile picture
+        form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Profile updated successfully!')
-            return redirect('user_profile')
+            return redirect('profile')
         return render(request, 'profile.html', {'form': form})
 
 class OwnerDashboardView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
-        return self.request.user.groups.filter(name='Boardinghouse Owner').exists()
+        return self.request.user.groups.filter(name='Boardinghouse Owners').exists()
 
     def get(self, request, *args, **kwargs):
         user = request.user
         boarding_houses = BoardingHouse.objects.filter(user=user)
         bookings = Booking.objects.filter(boarding_house__in=boarding_houses)
-        context = {'bookings': bookings}
+        context = {'boarding_houses': boarding_houses, 'bookings': bookings}
         return render(request, 'owner_dashboard.html', context)
 
 class UpdateBookingStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
-        return self.request.user.groups.filter(name='Boardinghouse Owner').exists()
+        return self.request.user.groups.filter(name='Boardinghouse Owners').exists()
 
     def post(self, request, booking_id, *args, **kwargs):
         new_status = request.POST.get('status')
@@ -109,7 +116,7 @@ class UpdateBookingStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 class AddBoardinghouseView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
-        return self.request.user.groups.filter(name='Boardinghouse Owner').exists()
+        return self.request.user.groups.filter(name='Boardinghouse Owners').exists()
 
     def get(self, request, *args, **kwargs):
         form = BoardingHouseForm()
@@ -121,5 +128,9 @@ class AddBoardinghouseView(LoginRequiredMixin, UserPassesTestMixin, View):
             boardinghouse = form.save(commit=False)
             boardinghouse.user = request.user
             boardinghouse.save()
-            return redirect('boardinghouse_list')
+
+            # Add success message
+            messages.success(request, 'Boardinghouse has been successfully added.')
+
+            return redirect('owner_dashboard')
         return render(request, 'add_boardinghouse.html', {'form': form})

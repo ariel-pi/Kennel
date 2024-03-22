@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Booking,  BoardingHouse #Profile,
+from .models import Booking,  BoardingHouse ,Profile
 from django.contrib.auth.models import User, Group
 
 class BookingForm(forms.ModelForm):
@@ -10,21 +10,11 @@ class BookingForm(forms.ModelForm):
         fields = ['check_in_date', 'check_out_date']
 
 
-# class UserProfileForm(forms.ModelForm):
-#     class Meta:
-#         model = Profile
-#         fields = ['first_name', 'last_name', 'phone_number', 'address']
-#         # fields = ['first_name', 'last_name', 'phone_number', 'address', 'profile_picture']
+class ProfileForm(forms.ModelForm):
 
-
-#     widgets = {
-#         'address': forms.Textarea(attrs={'rows': 3}),
-#     }
-
-#     # labels = {
-#     #     'profile_picture': 'Profile Picture',
-#     # }
-
+    class Meta:
+        model = Profile
+        fields = ["profile_picture"]
 
 
 class RegistrationForm(UserCreationForm):
@@ -38,7 +28,13 @@ class RegistrationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2']
-
+        
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("This email address is already registered.")
+        return email
+    
     def save(self, commit=True):
         user = super().save(commit=False)
         user_type = self.cleaned_data.get('user_type')

@@ -1,8 +1,19 @@
 <!-- your_app/templates/your_app/owner_dashboard.html -->
 
 {% extends 'base.html' %}
-
 {% block content %}
+  <a href="{% url 'add_boardinghouse' %}">Add Boarding House</a>
+  <h2>Your Boarding Houses</h2>
+
+  {% if boarding_houses %}
+    <ul>
+      {% for boarding_house in boarding_houses %}
+        <li>{{ boarding_house.name }} - {{ boarding_house.description }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No boarding houses found.</p>
+  {% endif %}
   <h2>Your Bookings</h2>
 
   {% if bookings %}

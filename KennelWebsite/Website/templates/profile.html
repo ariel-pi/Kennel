@@ -1,18 +1,36 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}User Profile - Dog Boarding{% endblock %}
 
 {% block content %}
-    <section>
-        <h2>User Profile</h2>
-        <p>View and edit your profile information.</p>
-    </section>
-
-    <section>
-        <form method="post" action="{% url 'user_profile' %}">
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>User Profile</title>
+    </head>
+    <body>
+        <h1>User Profile</h1>
+        <div>
+            <h2>Username: {{ profile.user.username }}</h2>
+            <p>Email: {{ profile.user.email }}</p>
+            {% if profile.profile_picture %}
+                <img src="{{ profile.profile_picture.url }}" alt="Profile Picture">
+            {% else %}
+                <p>No profile picture available</p>
+                
+            {% endif %}
+        </div>
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
+            {% if profile.profile_picture %}
+                <button type="submit">Change Profile Picture</button>
+            {% else %}
+                <button type="submit">Upload Profile Picture</button>
+            {% endif %}
             {{ form.as_p }}
-            <button type="submit">Update Profile</button>
         </form>
-    </section>
+    </body>
+    </html>
+
 {% endblock %}
