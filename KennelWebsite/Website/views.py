@@ -170,7 +170,18 @@ class UpdateBookingStatusView(PermissionRequiredMixin, View):
 class BoardinghouseListView(View):
     def get(self, request, *args, **kwargs):
         boardinghouses = BoardingHouse.objects.all()
-        return render(request, 'boardinghouse_list.html', {'boardinghouses': boardinghouses})
+        boardinghouses_and_avarege_reates = {}
+        
+        for boardinghouse in boardinghouses:
+            reviews = Review.objects.filter(boarding_house=boardinghouse)
+            amount_of_reviews = len(reviews)
+            if reviews:
+                average_rating = sum([review.rating for review in reviews]) / len(reviews)
+            else:
+                average_rating = 0
+            boardinghouses_and_avarege_reates[boardinghouse] = (average_rating, amount_of_reviews)
+
+        return render(request, 'boardinghouse_list.html', {'boardinghouses_and_rates': boardinghouses_and_avarege_reates})
 
 class BoardinghouseDetailView(View):
     def get(self, request, boardinghouse_id, *args, **kwargs):
@@ -219,7 +230,9 @@ class DeleteBoardinghouseView(PermissionRequiredMixin, View):
     
 class AddReviewView(PermissionRequiredMixin, View):
     permission_required = ('Website.add_review')
-
+    def get(self, request, boardinghouse_id, *args, **kwargs):
+        boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
+        return render(request, 'add_review.html', {'boardinghouse': boardinghouse})
     def post(self, request, boardinghouse_id, *args, **kwargs):
         boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
         rating = request.POST.get('rating')

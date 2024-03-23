@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Review - {{ boardinghouse.name }}{% endblock %}
+
+{% block content %}
+<section>
+    <h2>Add Review for {{ boardinghouse.name }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div>
+            <label for="rating">Rating:</label>
+            <select name="rating" id="rating">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+        </div>
+        <div>
+            <label for="review">Review:</label><br>
+            <textarea name="review" id="review" rows="4" cols="50"></textarea>
+        </div>
+        <button type="submit">Submit Review</button>
+    </form>
+</section>
+{% endblock %}
