@@ -33,6 +33,16 @@ class Booking(models.Model):
     check_out_date = models.DateField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     owner_notes = models.TextField(blank=True, null=True)
+    client_notes = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.boarding_house.name} ({self.status})"
+
+class Review(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    boarding_house = models.ForeignKey(BoardingHouse, on_delete=models.CASCADE)
+    rating = models.PositiveIntegerField()
+    review = models.TextField()
+
+    def __str__(self):
+        return f"{self.user.username} - {self.boarding_house.name} ({self.rating})"

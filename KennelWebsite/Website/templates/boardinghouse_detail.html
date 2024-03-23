@@ -14,7 +14,7 @@
     <section>
         <h3>Book a Stay</h3>
         {% if user.is_authenticated %}
-            <form method="post" action="{% url 'boardinghouse_detail' boardinghouse.id %}">
+            <form method="post" action="{% url 'booking' boardinghouse.id %}">
                 {% csrf_token %}
                 {{ form.as_p }}
                 <button type="submit">Book Now</button>

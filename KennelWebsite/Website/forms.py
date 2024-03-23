@@ -8,7 +8,7 @@ from django.contrib.auth.models import User, Group
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        fields = ['check_in_date', 'check_out_date']
+        fields = ['check_in_date', 'check_out_date', 'client_notes']
 
 
 class ProfileForm(forms.ModelForm):

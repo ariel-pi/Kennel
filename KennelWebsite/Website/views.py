@@ -2,7 +2,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 
-from .models import BoardingHouse, Booking, Profile
+from .models import BoardingHouse, Booking, Profile, Review
 from .forms import BookingForm,  BoardingHouseForm, RegistrationForm ,ProfileForm
 from django.contrib.auth import login
 from django.shortcuts import render, redirect, get_object_or_404
@@ -42,6 +42,7 @@ class RegisterView(View):
             Profile.objects.create(user=user)
             return redirect('home')
         return render(request, 'registration/register.html', {'form': form})
+
 class ProfileView(LoginRequiredMixin, View):
     def get(self, request):
         profile = request.user.profile
@@ -86,17 +87,17 @@ class UpdatePasswordView(LoginRequiredMixin, View):
             # Handle invalid form submission
             return render(request, 'update_password.html', {'form': form})
         
-class BoardinghouseListView(View):
-    def get(self, request, *args, **kwargs):
-        boardinghouses = BoardingHouse.objects.all()
-        return render(request, 'boardinghouse_list.html', {'boardinghouses': boardinghouses})
 
-class BoardinghouseDetailView(View):
-    def get(self, request, boardinghouse_id, *args, **kwargs):
-        boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
-        form = BookingForm()
 
-        return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
+class BookingView(PermissionRequiredMixin, View):
+    permission_required = ('Website.add_booking')
+    def _check_availability(boardinghouse, check_in_date, check_out_date):
+        bookings = Booking.objects.filter(boarding_house=boardinghouse)
+        occupied_in_date = 0
+        for booking in bookings:
+            if check_in_date < booking.check_out_date and check_out_date > booking.check_in_date:
+                occupied_in_date += 1
+        return occupied_in_date < boardinghouse.available_spaces
 
     def post(self, request, boardinghouse_id, *args, **kwargs):
         boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
@@ -105,20 +106,29 @@ class BoardinghouseDetailView(View):
         if form.is_valid():
             check_in_date = form.cleaned_data['check_in_date']
             check_out_date = form.cleaned_data['check_out_date']
+            client_notes = form.cleaned_data['client_notes']
 
             # Perform any additional validation or processing here
+            if check_in_date >= check_out_date:
+                form.add_error('check_out_date', 'Check-out date must be later than check-in date')
+                return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
+            if BookingView._check_availability(boardinghouse, check_in_date, check_out_date):
+                # Create a Booking instance
+                booking = Booking.objects.create(
+                    user=request.user,
+                    boarding_house=boardinghouse,
+                    check_in_date=check_in_date,
+                    check_out_date=check_out_date,
+                    status='pending',
+                    client_notes=client_notes,
+                )
+                booking.save()
 
-            # Create a Booking instance
-            booking = Booking.objects.create(
-                user=request.user,
-                boarding_house=boardinghouse,
-                check_in_date=check_in_date,
-                check_out_date=check_out_date,
-                status='pending'  # You may set the initial status as needed
-            )
-
-            messages.success(request, 'Booking successful! Check your booking history for details.')
-            return redirect('boardinghouse_list')
+                messages.success(request, 'Booking successful! Check your booking history for details.')
+                return redirect('booking_history')
+            else:
+                messages.error(request, 'Booking failed! The boardinghouse is fully booked for the selected dates.')
+                return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
 
         # If form is not valid, re-render the page with the form and error messages
         return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
@@ -147,6 +157,7 @@ class UpdateBookingStatusView(PermissionRequiredMixin, View):
     permission_required = ('Website.change_booking')
 
     def post(self, request, booking_id, *args, **kwargs):
+        print("update booking status view")
         new_status = request.POST.get('status')
         notes = request.POST.get('owner_notes')
         if new_status in dict(Booking.STATUS_CHOICES):
@@ -156,6 +167,16 @@ class UpdateBookingStatusView(PermissionRequiredMixin, View):
             booking.save()
             return redirect('owner_dashboard')
         return HttpResponseBadRequest('Invalid form submission')
+class BoardinghouseListView(View):
+    def get(self, request, *args, **kwargs):
+        boardinghouses = BoardingHouse.objects.all()
+        return render(request, 'boardinghouse_list.html', {'boardinghouses': boardinghouses})
+
+class BoardinghouseDetailView(View):
+    def get(self, request, boardinghouse_id, *args, **kwargs):
+        boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
+        form = BookingForm()
+        return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
 
 class AddBoardinghouseView(PermissionRequiredMixin, View):
     permission_required = ('Website.add_boardinghouse')
@@ -195,3 +216,22 @@ class DeleteBoardinghouseView(PermissionRequiredMixin, View):
         boardinghouse.delete()
         messages.success(request, 'Boardinghouse has been successfully deleted.')
         return redirect('owner_dashboard')
+    
+class AddReviewView(PermissionRequiredMixin, View):
+    permission_required = ('Website.add_review')
+
+    def post(self, request, boardinghouse_id, *args, **kwargs):
+        boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
+        rating = request.POST.get('rating')
+        review = request.POST.get('review')
+        if rating and review:
+            review = Review.objects.create(
+                user=request.user,
+                boarding_house=boardinghouse,
+                rating=rating,
+                review=review,
+            )
+            review.save()
+            messages.success(request, 'Review has been successfully added.')
+            return redirect('boardinghouse_detail', boardinghouse_id=boardinghouse_id)
+        return HttpResponseBadRequest('Invalid form submission')

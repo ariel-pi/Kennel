@@ -17,7 +17,15 @@
                         <p>Check-in: {{ booking.check_in_date }}</p>
                         <p>Check-out: {{ booking.check_out_date }}</p>
                         <p>Status: {{ booking.status }}</p>
-                        <p>Owner Comments: {{ booking.owner_notes }}</p>
+                        <p> My Notes: {{ booking.client_notes }}</p>
+                        <p>Owner Notes: {{ booking.owner_notes }}</p>
+                        {% if booking.status == 'approved'%}
+                            <form method="post" action="{% url 'add_review' booking.boarding_house.id %}">
+                                {% csrf_token %}
+                                <button type="submit">Leave a Review</button>
+                            </form>
+                            
+                        {% endif %}
                     </li>
                 {% endfor %}
             </ul>
