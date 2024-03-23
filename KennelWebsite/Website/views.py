@@ -148,9 +148,11 @@ class UpdateBookingStatusView(PermissionRequiredMixin, View):
 
     def post(self, request, booking_id, *args, **kwargs):
         new_status = request.POST.get('status')
+        notes = request.POST.get('owner_notes')
         if new_status in dict(Booking.STATUS_CHOICES):
             booking = Booking.objects.get(id=booking_id)
             booking.status = new_status
+            booking.owner_notes = notes
             booking.save()
             return redirect('owner_dashboard')
         return HttpResponseBadRequest('Invalid form submission')
@@ -174,3 +176,22 @@ class AddBoardinghouseView(PermissionRequiredMixin, View):
 
             return redirect('owner_dashboard')
         return render(request, 'add_boardinghouse.html', {'form': form})
+    
+class DeleteBoardinghouseView(PermissionRequiredMixin, View):
+    permission_required = ('Website.delete_boardinghouse')
+    def _update_boardinghouse_bookings(boardinghouse, status, owner_notes):
+        bookings = Booking.objects.filter(boarding_house=boardinghouse)
+        for booking in bookings:
+            booking.status = status
+            booking.owner_notes = owner_notes
+            booking.save()
+
+    def post(self, request, boardinghouse_id, *args, **kwargs):
+        if (boardinghouse := BoardingHouse.objects.filter(id=boardinghouse_id, user=request.user).first() is None):
+            messages.error(request, 'You are not authorized to delete this boardinghouse.')
+            return redirect('owner_dashboard')
+        boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
+        DeleteBoardinghouseView._update_boardinghouse_bookings(boardinghouse, status='declined', owner_notes='Boardinghouse has been deleted.')
+        boardinghouse.delete()
+        messages.success(request, 'Boardinghouse has been successfully deleted.')
+        return redirect('owner_dashboard')

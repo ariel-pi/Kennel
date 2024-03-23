@@ -28,10 +28,11 @@ class Booking(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    boarding_house = models.ForeignKey(BoardingHouse, on_delete=models.CASCADE)
+    boarding_house = models.ForeignKey(BoardingHouse,  on_delete=models.SET_NULL, null=True)
     check_in_date = models.DateField()
     check_out_date = models.DateField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    owner_notes = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.boarding_house.name} ({self.status})"

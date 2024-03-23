@@ -9,6 +9,9 @@
     <ul>
       {% for boarding_house in boarding_houses %}
         <li>{{ boarding_house.name }} - {{ boarding_house.description }}</li>
+        <form method="post" action="{% url 'delete_boardinghouse' boarding_house.id %}">
+          {% csrf_token %}
+          <button type="submit">Delete</button>
       {% endfor %}
     </ul>
   {% else %}
@@ -21,19 +24,27 @@
       <thead>
         <tr>
           <th>Boarding House</th>
+          <th>Client Name</th>
+          <th>Client Email</th>
           <th>Check-in Date</th>
           <th>Check-out Date</th>
           <th>Status</th>
+          <th>Owner Notes</th>
           <th>Update Status</th>
+          
         </tr>
       </thead>
       <tbody>
         {% for booking in bookings %}
           <tr>
             <td>{{ booking.boarding_house.name }}</td>
+            <td>{{booking.user.first_name}} {{booking.user.last_name}}</td>
+            <td>{{booking.user.email}}</td>
             <td>{{ booking.check_in_date }}</td>
             <td>{{ booking.check_out_date }}</td>
             <td>{{ booking.status }}</td>
+            <td>{{ booking.owner_notes}} </td>
+            
             <td>
               <form method="post" action="{% url 'update_booking_status' booking.id %}">
                 {% csrf_token %}
@@ -42,6 +53,7 @@
                     <option value="{{ choice.0 }}" {% if booking.status == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
                   {% endfor %}
                 </select>
+                <input type="text" name="owner_notes" value="{{ booking.owner_notes }}" ]>
                 <button type="submit">Update</button>
               </form>
             </td>

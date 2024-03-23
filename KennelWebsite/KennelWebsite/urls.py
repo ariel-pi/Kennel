@@ -17,5 +17,6 @@ urlpatterns = [
     path('user/update-username/', UpdateUsernameView.as_view(), name='update_username'),
     path('user/update-password/', UpdatePasswordView.as_view(), name='update_password'),
 ]
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
