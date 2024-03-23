@@ -10,13 +10,82 @@ from django.http import HttpResponseBadRequest
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
-
+from django.contrib.auth.views import PasswordChangeView
+from django.urls import reverse_lazy
+from .forms import UpdateUsernameForm
+from django.contrib.auth.views import PasswordChangeView
+from django.urls import reverse_lazy
+from django.views.generic import UpdateView
+from .forms import UpdateUsernameForm, UpdatePasswordForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 
 
 class HomeView(View):
     def get(self, request, *args, **kwargs):
         return render(request, 'home.html')
+    
+class RegisterView(View):
+    def get(self, request, *args, **kwargs):
+        form = RegistrationForm()
+        return render(request, 'registration/register.html', {'form': form})
 
+    def post(self, request, *args, **kwargs):
+        form = RegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            
+            # create a profile instance for the user
+            Profile.objects.create(user=user)
+            return redirect('home')
+        return render(request, 'registration/register.html', {'form': form})
+class ProfileView(LoginRequiredMixin, View):
+    def get(self, request):
+        profile = request.user.profile
+        form = ProfileForm(instance=profile)
+        return render(request, 'profile.html', {'form': form, 'profile': profile})
+
+    def post(self, request):
+        #TODO: remove the profile picture if the user wants to
+        # or if the user wants to update the profile picture
+        form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+        return render(request, 'profile.html', {'form': form})
+
+class UpdateUsernameView(LoginRequiredMixin, View):
+    def get(self, request):
+        return render(request, 'update_username.html')
+
+    def post(self, request):
+        new_username = request.POST.get('new_username')
+        if new_username:
+            request.user.username = new_username
+            request.user.save()
+            return redirect('profile')  # Redirect to user's profile page after updating username
+        else:
+            # Handle invalid form submission
+            return render(request, 'update_username.html', {'error': 'Invalid username'})
+
+class UpdatePasswordView(LoginRequiredMixin, View):
+    def get(self, request):
+        form = PasswordChangeForm(request.user)
+        return render(request, 'update_password.html', {'form': form})
+
+    def post(self, request):
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important for maintaining user's session
+            return redirect('profile')  # Redirect to user's profile page after updating password
+        else:
+            # Handle invalid form submission
+            return render(request, 'update_password.html', {'form': form})
+        
 class BoardinghouseListView(View):
     def get(self, request, *args, **kwargs):
         boardinghouses = BoardingHouse.objects.all()
@@ -54,45 +123,18 @@ class BoardinghouseDetailView(View):
         # If form is not valid, re-render the page with the form and error messages
         return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
 
-class RegisterView(View):
-    def get(self, request, *args, **kwargs):
-        form = RegistrationForm()
-        return render(request, 'registration/register.html', {'form': form})
 
-    def post(self, request, *args, **kwargs):
-        form = RegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            
-            # create a profile instance for the user
-            Profile.objects.create(user=user)
-            return redirect('home')
-        return render(request, 'registration/register.html', {'form': form})
 
-class BookingHistoryView(LoginRequiredMixin, View):
+class BookingHistoryView(PermissionRequiredMixin, View):
+    permission_required = ('Website.view_booking')
     def get(self, request, *args, **kwargs):
         bookings = Booking.objects.filter(user=request.user)
         return render(request, 'booking_history.html', {'bookings': bookings})
 
-class ProfileView(LoginRequiredMixin, View):
-    def get(self, request):
-        profile = request.user.profile
-        form = ProfileForm(instance=profile)
-        return render(request, 'profile.html', {'form': form, 'profile': profile})
 
-    def post(self, request):
-        #TODO: remove the profile picture if the user wants to
-        # or if the user wants to update the profile picture
-        form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
-        if form.is_valid():
-            form.save()
-            return redirect('profile')
-        return render(request, 'profile.html', {'form': form})
 
-class OwnerDashboardView(LoginRequiredMixin, UserPassesTestMixin, View):
-    def test_func(self):
-        return self.request.user.groups.filter(name='Boardinghouse Owners').exists()
+class OwnerDashboardView(PermissionRequiredMixin, View):
+    permission_required = ('Website.view_boardinghouse', 'Website.view_booking', 'Website.add_boardinghouse')
 
     def get(self, request, *args, **kwargs):
         user = request.user
@@ -101,9 +143,8 @@ class OwnerDashboardView(LoginRequiredMixin, UserPassesTestMixin, View):
         context = {'boarding_houses': boarding_houses, 'bookings': bookings}
         return render(request, 'owner_dashboard.html', context)
 
-class UpdateBookingStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
-    def test_func(self):
-        return self.request.user.groups.filter(name='Boardinghouse Owners').exists()
+class UpdateBookingStatusView(PermissionRequiredMixin, View):
+    permission_required = ('Website.change_booking')
 
     def post(self, request, booking_id, *args, **kwargs):
         new_status = request.POST.get('status')
@@ -114,9 +155,8 @@ class UpdateBookingStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
             return redirect('owner_dashboard')
         return HttpResponseBadRequest('Invalid form submission')
 
-class AddBoardinghouseView(LoginRequiredMixin, UserPassesTestMixin, View):
-    def test_func(self):
-        return self.request.user.groups.filter(name='Boardinghouse Owners').exists()
+class AddBoardinghouseView(PermissionRequiredMixin, View):
+    permission_required = ('Website.add_boardinghouse')
 
     def get(self, request, *args, **kwargs):
         form = BoardingHouseForm()

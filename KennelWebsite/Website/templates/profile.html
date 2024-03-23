@@ -18,9 +18,10 @@
                 <img src="{{ profile.profile_picture.url }}" alt="Profile Picture">
             {% else %}
                 <p>No profile picture available</p>
-                
             {% endif %}
         </div>
+        <!-- Add link to update username -->
+        <a href="{% url 'update_username' %}">Update Username</a>
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {% if profile.profile_picture %}
@@ -32,5 +33,4 @@
         </form>
     </body>
     </html>
-
 {% endblock %}

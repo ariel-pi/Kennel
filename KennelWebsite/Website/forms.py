@@ -1,8 +1,9 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from .models import Booking,  BoardingHouse ,Profile
 from django.contrib.auth.models import User, Group
+
 
 class BookingForm(forms.ModelForm):
     class Meta:
@@ -47,7 +48,18 @@ class RegistrationForm(UserCreationForm):
             user.groups.add(group)
 
         return user
-    
+
+
+class UpdateUsernameForm(UserChangeForm):
+    class Meta:
+        model = User
+        fields = ['username']
+
+class UpdatePasswordForm(PasswordChangeForm):
+    pass
+
+
+
 class BoardingHouseForm(forms.ModelForm):
     class Meta:
         model = BoardingHouse
