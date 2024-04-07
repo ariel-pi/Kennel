@@ -65,6 +65,8 @@ class UpdateUsernameView(LoginRequiredMixin, View):
     def post(self, request):
         new_username = request.POST.get('new_username')
         if new_username:
+            if Profile.objects.filter(user__username=new_username).exists():
+                return render(request, 'update_username.html', {'error': 'Username already exists'})
             request.user.username = new_username
             request.user.save()
             return redirect('profile')  # Redirect to user's profile page after updating username
@@ -180,7 +182,8 @@ class BoardinghouseListView(View):
             else:
                 average_rating = 0
             boardinghouses_and_avarege_reates[boardinghouse] = (average_rating, amount_of_reviews)
-
+        
+        print(boardinghouses_and_avarege_reates)
         return render(request, 'boardinghouse_list.html', {'boardinghouses_and_rates': boardinghouses_and_avarege_reates})
 
 class BoardinghouseDetailView(View):

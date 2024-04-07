@@ -24,7 +24,8 @@
             {% endif %}
         </div>
         <!-- Add link to update username -->
-        <a href="{% url 'update_username' %}">Update Username</a>
+        <a href="{% url 'update_username' %}">Update Username</a></br>
+        <a href="{% url 'update_password' %}">Update Password</a>
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {% if profile.profile_picture %}

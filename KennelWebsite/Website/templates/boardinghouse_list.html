@@ -11,13 +11,14 @@
     <section>
         <h3>Available Boarding Houses</h3>
         <ul>
-            {% for boardinghouse in boardinghouses %}
+            {% for boardinghouse, rate_info in boardinghouses_and_rates.items %}
                 <li>
                     <h4>{{ boardinghouse.name }}</h4>
                     <p>{{ boardinghouse.description }}</p>
                     <p>Location: {{ boardinghouse.location }}</p>
                     <p>Available Spaces: {{ boardinghouse.available_spaces }}</p>
-                    <p>Rate: {{boardinghouses_and_rates.get(boardinghouse)[0] }}</p>
+                    <p>Rate: {{ rate_info.0 }}</p>
+                    <p>Rated By: {{ rate_info.1 }} users</p>
                     <a href="{% url 'boardinghouse_detail' boardinghouse.id %}">View Details</a>
                 </li>
             {% endfor %}
