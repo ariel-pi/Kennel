@@ -2,7 +2,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 
-from .models import BoardingHouse, Booking, Profile, Review
+from .models import BoardingHouse, Booking, Profile, Review, Dog
 from .forms import BookingForm,  BoardingHouseForm, RegistrationForm ,ProfileForm
 from django.contrib.auth import login
 from django.shortcuts import render, redirect, get_object_or_404
@@ -16,16 +16,20 @@ from .forms import UpdateUsernameForm
 from django.contrib.auth.views import PasswordChangeView
 from django.urls import reverse_lazy
 from django.views.generic import UpdateView
-from .forms import UpdateUsernameForm, UpdatePasswordForm
+from .forms import UpdateUsernameForm, UpdatePasswordForm, DogForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
-
+from django.views.generic.edit import CreateView
 
 class HomeView(View):
     def get(self, request, *args, **kwargs):
         return render(request, 'home.html')
+
+class AboutView(View):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'about.html')
     
 class RegisterView(View):
     def get(self, request, *args, **kwargs):
@@ -45,9 +49,12 @@ class RegisterView(View):
 
 class ProfileView(LoginRequiredMixin, View):
     def get(self, request):
+
         profile = request.user.profile
         form = ProfileForm(instance=profile)
-        return render(request, 'profile.html', {'form': form, 'profile': profile})
+        dogs = Dog.objects.filter(owner=request.user)
+        print("dogs:",dogs)
+        return render(request, 'profile.html', {'form': form, 'profile': profile, 'dogs': dogs})
 
     def post(self, request):
         #TODO: remove the profile picture if the user wants to
@@ -103,12 +110,15 @@ class BookingView(PermissionRequiredMixin, View):
 
     def post(self, request, boardinghouse_id, *args, **kwargs):
         boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
-        form = BookingForm(request.POST)
+        form = BookingForm(request.POST, user=request.user)
 
         if form.is_valid():
+            dog = form.cleaned_data['dog']
+            print("selected dog:",dog)
             check_in_date = form.cleaned_data['check_in_date']
             check_out_date = form.cleaned_data['check_out_date']
             client_notes = form.cleaned_data['client_notes']
+
 
             # Perform any additional validation or processing here
             if check_in_date >= check_out_date:
@@ -118,6 +128,7 @@ class BookingView(PermissionRequiredMixin, View):
                 # Create a Booking instance
                 booking = Booking.objects.create(
                     user=request.user,
+                    dog = dog,
                     boarding_house=boardinghouse,
                     check_in_date=check_in_date,
                     check_out_date=check_out_date,
@@ -141,7 +152,9 @@ class BookingHistoryView(PermissionRequiredMixin, View):
     permission_required = ('Website.view_booking')
     def get(self, request, *args, **kwargs):
         bookings = Booking.objects.filter(user=request.user)
-        return render(request, 'booking_history.html', {'bookings': bookings})
+        # Get all boardinghouses that the user has reviewed
+        reviwed_boardinghouses= [boardinghouse for boardinghouse in BoardingHouse.objects.all() if Review.objects.filter(user=request.user, boarding_house=boardinghouse).exists()]
+        return render(request, 'booking_history.html', {'bookings': bookings, 'reviewed_boardinghouses': reviwed_boardinghouses})
 
 
 
@@ -189,7 +202,7 @@ class BoardinghouseListView(View):
 class BoardinghouseDetailView(View):
     def get(self, request, boardinghouse_id, *args, **kwargs):
         boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
-        form = BookingForm()
+        form = BookingForm(request.POST, user=request.user)
         return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
 
 class AddBoardinghouseView(PermissionRequiredMixin, View):
@@ -237,6 +250,10 @@ class AddReviewView(PermissionRequiredMixin, View):
         boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
         return render(request, 'add_review.html', {'boardinghouse': boardinghouse})
     def post(self, request, boardinghouse_id, *args, **kwargs):
+        if Review.objects.filter(user=request.user, boarding_house=boardinghouse_id).exists():
+            print('Review already exists')
+            messages.error(request, 'You have already reviewed this boardinghouse.')
+            return redirect('boardinghouse_detail', boardinghouse_id=boardinghouse_id)
         boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
         rating = request.POST.get('rating')
         review = request.POST.get('review')
@@ -251,3 +268,62 @@ class AddReviewView(PermissionRequiredMixin, View):
             messages.success(request, 'Review has been successfully added.')
             return redirect('boardinghouse_detail', boardinghouse_id=boardinghouse_id)
         return HttpResponseBadRequest('Invalid form submission')
+
+
+class ReviewView(View):
+
+    def get(self, request,boardinghouse_id,*args, **kwargs):
+        user_reviews = Review.objects.filter(user=request.user, boarding_house=boardinghouse_id)
+        reviews = Review.objects.filter(boarding_house=boardinghouse_id)
+        return render(request, 'reviews.html', {'reviews': reviews, 'user_reviews': user_reviews})
+    
+    def post(self, request, review_id, *args, **kwargs):
+        # check if the user has permission to delete reviews
+        if not request.user.has_perm('Website.delete_review'):
+            messages.error(request, 'You are not authorized to delete reviews.')
+            return redirect('boardinghouse_list')
+        # check if the review exists and the user is the owner of the review
+        if (review := Review.objects.filter(id=review_id, user=request.user).first() is None):
+            messages.error(request, 'You are not authorized to delete this review.')
+            return redirect('boardinghouse_list')
+        review = get_object_or_404(Review, id=review_id)
+        review.delete()
+        messages.success(request, 'Review has been successfully deleted.')
+        return redirect('reviews', boardinghouse_id=review.boarding_house.id)
+    
+
+class AddDogView(PermissionRequiredMixin, CreateView):
+    permission_required = ('Website.add_dog')
+    model = Dog
+    form_class = DogForm
+    template_name = 'add_dog.html'
+    success_url = '/user/profile/'
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+    
+class DogDetailView(View):
+    def get(self, request, chip_id, *args, **kwargs):
+       
+        dog = get_object_or_404(Dog, chip_id=chip_id)
+        return render(request, 'dog_detail.html', {'dog': dog})
+    def post(self, request, dog_id, *args, **kwargs):
+        if (dog := Dog.objects.filter(chip_id=dog_id, owner=request.user).first() is None):
+            messages.error(request, 'You are not authorized to delete this dog.')
+            return redirect('profile')
+        dog = get_object_or_404(Dog, chip_id=dog_id)
+        dog.delete()
+        messages.success(request, 'Dog has been successfully deleted.')
+        return redirect('profile')
+
+class DogUpdateView(UpdateView):
+    model = Dog
+    fields = ['name', 'owner', 'medicines', 'vaccination', 'age', 'gender', 'race', 'weight', 'social_level', 'walking_requirements']
+    template_name = 'dog_update.html'
+    def get_success_url(self):
+        return reverse_lazy('dog_detail', kwargs={'chip_id': self.object.chip_id})
+
+    def get_object(self, queryset=None):
+        chip_id = self.kwargs.get('chip_id')
+        return get_object_or_404(Dog, chip_id=chip_id)

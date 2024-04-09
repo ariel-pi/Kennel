@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Reviews - Boarding House Reviews
+{% endblock title %}
+    
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boarding House Reviews</title>
+</head>
+<body>
+    <h1>my Reviews</h1>
+    <ul>
+        {% for review in user_reviews %}
+            <li>
+                <strong>Boarding House:</strong> {{ review.boarding_house.name }}<br>
+                <strong>Rating:</strong> {{ review.rating }}<br>
+                <strong>Review:</strong> {{ review.review }}<br>
+            </li>
+            <!--delete button-->
+            <form method="post" action="{% url 'delete_review' review.id %}">
+                {% csrf_token %}
+                <button type="submit">Delete Review</button>
+            </form>
+        
+        {% endfor %}
+    </ul>
+    <h2>All Reviews</h2>
+        {% for review in reviews %}
+            {% if review.user != user %}
+                
+            <li>
+                <strong>User:</strong> {{ review.user.username }}<br>
+                <strong>Boarding House:</strong> {{ review.boarding_house.name }}<br>
+                <strong>Rating:</strong> {{ review.rating }}<br>
+                <strong>Review:</strong> {{ review.review }}<br>
+            </li>
+            {% endif %}
+        {% empty %}
+            <li>No reviews available.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+{% endblock %}

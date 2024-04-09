@@ -19,10 +19,12 @@
 <nav>
     <ul>
         <li><a href="{% url 'home' %}">Home</a></li>
+        <li><a href="{% url 'about' %}">About</a></li>
         <li><a href="{% url 'boardinghouse_list' %}">Boarding Houses</a></li>
 
         {% if user.is_authenticated %}
-        {% if request.user|has_group:"Customer" %}
+            <li><a href="{% url 'profile' %}">Profile</a></li>
+        {% if request.user|has_group:"Customers" %}
             <li><a href="{% url 'booking_history' %}">Booking History</a></li>
         {% elif request.user|has_group:"Boardinghouse Owners"  %}
             <li><a href="{% url 'owner_dashboard' %}">Owner Dashboard</a></li>

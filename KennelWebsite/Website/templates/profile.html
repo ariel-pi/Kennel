@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filters %}
+
 
 {% block title %}User Profile - Dog Boarding{% endblock %}
 
@@ -23,7 +25,6 @@
                 <p>No profile picture available</p>
             {% endif %}
         </div>
-        <!-- Add link to update username -->
         <a href="{% url 'update_username' %}">Update Username</a></br>
         <a href="{% url 'update_password' %}">Update Password</a>
         <form method="post" enctype="multipart/form-data">
@@ -35,6 +36,22 @@
             {% endif %}
             {{ form.as_p }}
         </form>
+        {% if profile.user|has_group:"Customers" %}
+            <h>My Dogs</h>
+            <ul>
+                {% for dog in dogs %}
+                    <li>
+                        <strong>Name:</strong> {{ dog.name }}<br>
+                        <a href="{% url 'dog_detail' dog.chip_id %}">View Details</a>
+                    
+                    </li>
+                {% empty %}
+                    <li>No dogs available.</li>
+                {% endfor %}
+            </ul>
+            <a href="{% url 'add_dog' %}">Add Dog</a>
+        {% endif %}
+            
     </body>
     </html>
 {% endblock %}

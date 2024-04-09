@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ dog.name }} Details</title>
+</head>
+<body>
+    <h1>{{ dog.name }} Details</h1>
+    <p><strong>Chip ID:</strong> {{ dog.chip_id }}</p>
+    <p><strong>Medicines:</strong> {{ dog.medicines }}</p>
+    <p><strong>Vaccination:</strong> {{ dog.get_vaccination_display }}</p>
+    <p><strong>Age:</strong> {{ dog.age }}</p>
+    <p><strong>Gender:</strong> {{ dog.get_gender_display }}</p>
+    <p><strong>Race:</strong> {{ dog.race }}</p>
+    <p><strong>Weight:</strong> {{ dog.weight }}</p>
+    <p><strong>Social Level:</strong> {{ dog.social_level }}</p>
+    <p><strong>Walking Requirements:</strong> {{ dog.walking_requirements }}</p>
+</body>
+<a href="{% url 'update_dog' dog.chip_id %}"></ahref>Update Details</a>
+</html>
+{% endblock %}

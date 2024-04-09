@@ -1,14 +1,19 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 from django.contrib.auth.models import User
-from .models import Booking,  BoardingHouse ,Profile
+from .models import Booking,  BoardingHouse ,Profile, Dog
 from django.contrib.auth.models import User, Group
 
 
 class BookingForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        print("kwargs",kwargs)
+        user = kwargs.pop('user')  # Retrieve the user from kwargs
+        super().__init__(*args, **kwargs)
+        self.fields['dog'].queryset = Dog.objects.filter(owner=user)  # Filter the dogs based on the user
     class Meta:
         model = Booking
-        fields = ['check_in_date', 'check_out_date', 'client_notes']
+        fields = ['check_in_date', 'check_out_date', 'client_notes', 'dog']
 
 
 class ProfileForm(forms.ModelForm):
@@ -64,3 +69,9 @@ class BoardingHouseForm(forms.ModelForm):
     class Meta:
         model = BoardingHouse
         fields = ['name', 'description', 'location', 'contact_details', 'available_spaces']
+
+class DogForm(forms.ModelForm):
+    class Meta:
+        model = Dog
+        fields = ['chip_id', 'name', 'medicines', 'vaccination', 'age','gender','race','weight','social_level','walking_requirements']
+        # fields = '__all__'
