@@ -19,24 +19,10 @@
             <p>Last Name: {{ profile.user.last_name }}</p>
             <p>Email: {{ profile.user.email }}</p>
 
-            {% if profile.profile_picture %}
-                <img src="{{ profile.profile_picture.url }}" alt="Profile Picture">
-            {% else %}
-                <p><i>No profile picture available</i></p>
-            {% endif %}
+            
         </div>
         
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-            {% if profile.profile_picture %}
-                <button type="submit" class = "small_button">Change Profile Picture</button>
-            {% else %}
-                <button type="submit" class = "small_button">Upload Profile Picture</button>
-            {% endif %}
-            
-            
-        </form>
+        
         
         <h3>Edit username and password</h3>
         
