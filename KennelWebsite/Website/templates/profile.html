@@ -9,12 +9,12 @@
     <!DOCTYPE html>
     <html>
     <head>
-        <title>User Profile</title>
+        <title>My Profile</title>
     </head>
     <body>
-        <h1>User Profile</h1>
+        <h2>My Profile</h2>
         <div>
-            <h2>Username: {{ profile.user.username }}</h2>
+            <p><b>Username: {{ profile.user.username }}</b></p>
             <p>First Name: {{ profile.user.first_name }}</p>
             <p>Last Name: {{ profile.user.last_name }}</p>
             <p>Email: {{ profile.user.email }}</p>
@@ -22,26 +22,33 @@
             {% if profile.profile_picture %}
                 <img src="{{ profile.profile_picture.url }}" alt="Profile Picture">
             {% else %}
-                <p>No profile picture available</p>
+                <p><i>No profile picture available</i></p>
             {% endif %}
         </div>
-        <a href="{% url 'update_username' %}">Update Username</a></br>
-        <a href="{% url 'update_password' %}">Update Password</a>
+        
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            {% if profile.profile_picture %}
-                <button type="submit">Change Profile Picture</button>
-            {% else %}
-                <button type="submit">Upload Profile Picture</button>
-            {% endif %}
             {{ form.as_p }}
+            {% if profile.profile_picture %}
+                <button type="submit" class = "small_button">Change Profile Picture</button>
+            {% else %}
+                <button type="submit" class = "small_button">Upload Profile Picture</button>
+            {% endif %}
+            
+            
         </form>
+        
+        <h3>Edit username and password</h3>
+        
+        <a href="{% url 'update_username' %}" >Update Username</a></br>
+        <a href="{% url 'update_password' %}">Update Password</a></br>
+        
         {% if profile.user|has_group:"Customers" %}
-            <h>My Dogs</h>
+            <h2>My Dogs</h2>
             <ul>
                 {% for dog in dogs %}
                     <li>
-                        <strong>Name:</strong> {{ dog.name }}<br>
+                        <strong>{{ dog.name }}</strong> <br>
                         <a href="{% url 'dog_detail' dog.chip_id %}">View Details</a>
                     
                     </li>
@@ -49,7 +56,7 @@
                     <li>No dogs available.</li>
                 {% endfor %}
             </ul>
-            <a href="{% url 'add_dog' %}">Add Dog</a>
+            <a href="{% url 'add_dog' %}" class = "small_button">Add Dog</a>
         {% endif %}
             
     </body>

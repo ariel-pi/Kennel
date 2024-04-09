@@ -24,8 +24,14 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.views.generic.edit import CreateView
 
 class HomeView(View):
+    def _highest_rated_boardinghouses():
+        #TODO: implement this method
+        boardinghouses = BoardingHouse.objects.all()
+        return boardinghouses[:2]
+
     def get(self, request, *args, **kwargs):
-        return render(request, 'home.html')
+        featured_boardinghouses = HomeView._highest_rated_boardinghouses()
+        return render(request, 'home.html', {'featured_boardinghouses': HomeView._highest_rated_boardinghouses()})
 
 class AboutView(View):
     def get(self, request, *args, **kwargs):
@@ -111,19 +117,19 @@ class BookingView(PermissionRequiredMixin, View):
     def post(self, request, boardinghouse_id, *args, **kwargs):
         boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
         form = BookingForm(request.POST, user=request.user)
-
         if form.is_valid():
             dog = form.cleaned_data['dog']
-            print("selected dog:",dog)
             check_in_date = form.cleaned_data['check_in_date']
             check_out_date = form.cleaned_data['check_out_date']
             client_notes = form.cleaned_data['client_notes']
 
-
+            
             # Perform any additional validation or processing here
             if check_in_date >= check_out_date:
+                
                 form.add_error('check_out_date', 'Check-out date must be later than check-in date')
                 return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
+            
             if BookingView._check_availability(boardinghouse, check_in_date, check_out_date):
                 # Create a Booking instance
                 booking = Booking.objects.create(
@@ -141,7 +147,7 @@ class BookingView(PermissionRequiredMixin, View):
                 return redirect('booking_history')
             else:
                 messages.error(request, 'Booking failed! The boardinghouse is fully booked for the selected dates.')
-                return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
+                return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form,'error':'Booking failed! The boardinghouse is fully booked for the selected dates.'})
 
         # If form is not valid, re-render the page with the form and error messages
         return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
@@ -202,8 +208,10 @@ class BoardinghouseListView(View):
 class BoardinghouseDetailView(View):
     def get(self, request, boardinghouse_id, *args, **kwargs):
         boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
-        form = BookingForm(request.POST, user=request.user)
-        return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
+        if request.user.is_authenticated:
+            form = BookingForm(user=request.user)
+            return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse, 'form': form})
+        return render(request, 'boardinghouse_detail.html', {'boardinghouse': boardinghouse})
 
 class AddBoardinghouseView(PermissionRequiredMixin, View):
     permission_required = ('Website.add_boardinghouse')
@@ -273,9 +281,10 @@ class AddReviewView(PermissionRequiredMixin, View):
 class ReviewView(View):
 
     def get(self, request,boardinghouse_id,*args, **kwargs):
+        boardinghouse_name = BoardingHouse.objects.get(id=boardinghouse_id).name
         user_reviews = Review.objects.filter(user=request.user, boarding_house=boardinghouse_id)
         reviews = Review.objects.filter(boarding_house=boardinghouse_id)
-        return render(request, 'reviews.html', {'reviews': reviews, 'user_reviews': user_reviews})
+        return render(request, 'reviews.html', {'reviews': reviews, 'user_reviews': user_reviews, 'boardinghouse_name': boardinghouse_name})
     
     def post(self, request, review_id, *args, **kwargs):
         # check if the user has permission to delete reviews

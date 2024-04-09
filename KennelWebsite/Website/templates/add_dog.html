@@ -13,7 +13,7 @@
     <form method="POST", action="{% url 'add_dog' %}">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Submit</button>
+        <button type="submit" class = "small_button">Submit</button>
     </form>
 </body>
 </html>

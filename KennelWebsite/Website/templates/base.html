@@ -1,58 +1,69 @@
 <!-- base.html -->
 {% load custom_filters %}
+{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Your Site Title{% endblock %}</title>
-    <!-- Add your CSS and JS links here -->
+    <title>{% block title %}Dogs Club{% endblock %}</title>
+    <!-- CSS -->
+    <link
+    rel="preload"
+    as="style"
+    href="{% static 'css/style.css' %}"
+    onload="this.rel = 'stylesheet'"
+  />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Karla&family=Markazi+Text:wght@500&display=swap"
+    rel="stylesheet"
+  />
 </head>
 <body>
 
-<header>
-    <h1>Your Site</h1>
-    <!-- Add any common header elements here -->
-</header>
+    <header>
+        <img src="{% static 'img/logo.png' %}" alt="Logo" class="logo">
+        <h1>Dogs Club</h1>
+        {% if user.is_authenticated %}
+            
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class = "small_button">Logout</button>
+                </form>
+            
+        {% else %}
+            
+                <a href="{% url 'login' %}" >Login</a>/<a href="{% url 'register' %}" >Sign Up</a>
+        {% endif %}
+    </header>
 
-<nav>
-    <ul>
-        <li><a href="{% url 'home' %}">Home</a></li>
-        <li><a href="{% url 'about' %}">About</a></li>
-        <li><a href="{% url 'boardinghouse_list' %}">Boarding Houses</a></li>
+    <nav>
+        <ul>
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'about' %}">About</a></li>
+            <li><a href="{% url 'boardinghouse_list' %}">Boarding Houses</a></li>
 
         {% if user.is_authenticated %}
             <li><a href="{% url 'profile' %}">Profile</a></li>
-        {% if request.user|has_group:"Customers" %}
-            <li><a href="{% url 'booking_history' %}">Booking History</a></li>
-        {% elif request.user|has_group:"Boardinghouse Owners"  %}
-            <li><a href="{% url 'owner_dashboard' %}">Owner Dashboard</a></li>
+            {% if request.user|has_group:"Customers" %}
+                <li><a href="{% url 'booking_history' %}">Booking History</a></li>
+            {% elif request.user|has_group:"Boardinghouse Owners"  %}
+                <li><a href="{% url 'owner_dashboard' %}">Owner Dashboard</a></li>
+            {% endif %}
         {% endif %}
-        <li>
-            <form method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button type="submit">Logout</button>
-            </form>
-        </li>
-    {% else %}
-        <li>
-            <a href="{% url 'login' %}" >Login</a>
-        </li>
-        <li>
-            <a href="{% url 'register' %}" >Sign Up</a>
-        </li>
-    {% endif %}
-    </ul>
-</nav>
+        </ul>
+    </nav>
 
 <main>
     {% block content %}{% endblock %}
 </main>
 
 <footer>
-    <!-- Add your footer content here -->
-    <p>&copy; 2024 Your Site. All rights reserved.</p>
+    
 </footer>
 
 </body>

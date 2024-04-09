@@ -13,18 +13,18 @@
     <title>Boarding House Reviews</title>
 </head>
 <body>
-    <h1>my Reviews</h1>
+    <h1>Reviews about {{ boardinghouse_name }}</h1>
+    <h2>my Reviews</h2>
     <ul>
         {% for review in user_reviews %}
             <li>
-                <strong>Boarding House:</strong> {{ review.boarding_house.name }}<br>
                 <strong>Rating:</strong> {{ review.rating }}<br>
                 <strong>Review:</strong> {{ review.review }}<br>
             </li>
             <!--delete button-->
             <form method="post" action="{% url 'delete_review' review.id %}">
                 {% csrf_token %}
-                <button type="submit">Delete Review</button>
+                <button type="submit" class = "small_button">Delete Review</button>
             </form>
         
         {% endfor %}
@@ -33,12 +33,10 @@
         {% for review in reviews %}
             {% if review.user != user %}
                 
-            <li>
-                <strong>User:</strong> {{ review.user.username }}<br>
-                <strong>Boarding House:</strong> {{ review.boarding_house.name }}<br>
+            <h3>{{ review.user.username }}</h3>
                 <strong>Rating:</strong> {{ review.rating }}<br>
                 <strong>Review:</strong> {{ review.review }}<br>
-            </li>
+            
             {% endif %}
         {% empty %}
             <li>No reviews available.</li>

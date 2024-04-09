@@ -3,10 +3,10 @@
 {% block title %}Booking History - Dog Boarding{% endblock %}
 
 {% block content %}
-    <section>
+    
         <h2>Booking History</h2>
         <p>View your past and current booking requests.</p>
-    </section>
+   
 
     <section>
         {% if bookings %}
@@ -21,7 +21,7 @@
                         <p> My Notes: {{ booking.client_notes }}</p>
                         <p>Owner Notes: {{ booking.owner_notes }}</p>
                         {% if booking.status == 'approved' and booking.boarding_house not in reviewed_boardinghouses %}
-                            <a href="{% url 'add_review' booking.boarding_house.id %}">leave a review<a>
+                            <a href="{% url 'add_review' booking.boarding_house.id %}">leave a review</a>
                             
                         {% endif %}
                     </li>

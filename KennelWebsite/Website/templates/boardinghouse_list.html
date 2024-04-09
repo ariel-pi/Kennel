@@ -3,17 +3,14 @@
 {% block title %}Boarding Houses - Dog Boarding{% endblock %}
 
 {% block content %}
-    <section>
-        <h2>Explore Boarding Houses</h2>
+        <h2>Explore our Boarding Houses</h2>
         <p>Find the perfect place for your dog's stay.</p>
-    </section>
 
-    <section>
-        <h3>Available Boarding Houses</h3>
+        <h2>Boarding Houses</h2>
         <ul>
             {% for boardinghouse, rate_info in boardinghouses_and_rates.items %}
                 <li>
-                    <h4>{{ boardinghouse.name }}</h4>
+                    <h3>{{ boardinghouse.name }}</h3>
                     <p>{{ boardinghouse.description }}</p>
                     <p>Location: {{ boardinghouse.location }}</p>
                     <p>Available Spaces: {{ boardinghouse.available_spaces }}</p>
@@ -23,5 +20,4 @@
                 </li>
             {% endfor %}
         </ul>
-    </section>
 {% endblock %}
