@@ -19,49 +19,84 @@
   <h2>Your Bookings</h2>
 
   {% if bookings %}
-    <table>
-      <thead>
-        <tr>
-          <th>Boarding House</th>
-          <th>Client Name</th>
-          <th>Client Email</th>
-          <th>Check-in Date</th>
-          <th>Check-out Date</th>
-          <th>Status</th>
-          <th>Client Notes</th>
-          <th>Owner Notes</th>
-          <th>Update Status</th>
-          
-        </tr>
-      </thead>
-      <tbody>
-        {% for booking in bookings %}
-          <tr>
-            <td>{{ booking.boarding_house.name }}</td>
-            <td>{{booking.user.first_name}} {{booking.user.last_name}}</td>
-            <td>{{booking.user.email}}</td>
-            <td>{{ booking.check_in_date }}</td>
-            <td>{{ booking.check_out_date }}</td>
-            <td>{{ booking.status }}</td>
-            <td>{{ booking.client_notes }}</td>
-            <td>{{ booking.owner_notes}} </td>
+    {% for booking in bookings %}
+          <h2><i>Booking ID: {{ booking.id }}</i></h2>
+          <table>
             
-            <td>
-              <form method="post" action="{% url 'update_booking_status' booking.id %}">
-                {% csrf_token %}
-                <select name="status">
-                  {% for choice in booking.STATUS_CHOICES %}
-                    <option value="{{ choice.0 }}" {% if booking.status == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
-                  {% endfor %}
-                </select>
-                <input type="text" name="owner_notes"  placeholder="Change notes...">
-                <button type="submit" class = "small_button">Update</button>
-              </form>
-            </td>
-          </tr>
+            <thead>
+              <tr>
+                <th>Boarding House</th>
+                <th>Client Name</th>
+                <th>Client Email</th>
+                <th>Check-in Date</th>
+                <th>Check-out Date</th>
+                <th>Status</th>
+                <th>Client Notes</th>
+                <th>Owner Notes</th>
+                <th>Update Status</th>
+                
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>{{ booking.boarding_house.name }}</td>
+                  <td>{{booking.user.first_name}} {{booking.user.last_name}}</td>
+                  <td>{{booking.user.email}}</td>
+                  <td>{{ booking.check_in_date }}</td>
+                  <td>{{ booking.check_out_date }}</td>
+                  <td>{{ booking.status }}</td>
+                  <td>{{ booking.client_notes }}</td>
+                  <td>{{ booking.owner_notes}} </td>
+                  
+                  <td>
+                    <form method="post" action="{% url 'update_booking_status' booking.id %}">
+                      {% csrf_token %}
+                      <select name="status">
+                        {% for choice in booking.STATUS_CHOICES %}
+                          <option value="{{ choice.0 }}" {% if booking.status == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                        {% endfor %}
+                      </select>
+                      <input type="text" name="owner_notes"  placeholder="Change notes...">
+                      <button type="submit" class = "small_button">Update</button>
+                    </form>
+                  </td>
+                </tr>
+            </tbody>
+          </table>
+          <h3>Dog Details</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Dog Name</th>
+                <th>Chip ID</th>
+                <th>Medicines</th>
+                <th>Vaccination</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Race</th>
+                <th>Weight</th>
+                <th>Social Level</th>
+                <th>Walking Lequirements</th>
+
+                
+              </tr>
+            </thead>
+            <tbody>
+                <tr>
+                  <td>{{ booking.dog.name }}</td>
+                  <td>{{ booking.dog.chip_id }}</td>
+                  <td>{{ booking.dog.medicines }}</td>
+                  <td>{{ booking.dog.vaccination }}</td>
+                  <td>{{ booking.dog.age }}</td>
+                  <td>{{ booking.dog.gender }}</td>
+                  <td>{{ booking.dog.race }}</td>
+                  <td>{{ booking.dog.weight }}</td>
+                  <td>{{ booking.dog.social_level }}</td>
+                  <td>{{ booking.dog.walking_requirements }}</td>
+            
+          </table>
         {% endfor %}
-      </tbody>
-    </table>
   {% else %}
     <p>No bookings found.</p>
   {% endif %}

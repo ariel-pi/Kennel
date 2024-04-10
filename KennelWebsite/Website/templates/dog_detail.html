@@ -21,5 +21,9 @@
     <p><strong>Walking Requirements:</strong> {{ dog.walking_requirements }}</p>
 </body>
 <a href="{% url 'update_dog' dog.chip_id %}" class="small_button"></ahref>Update Details</a>
+<form method="post" action="{% url 'delete_dog' dog.chip_id %}">
+    {% csrf_token %}
+    <button type="submit" class = "small_button">Delete</button>
+  </form>
 </html>
 {% endblock %}

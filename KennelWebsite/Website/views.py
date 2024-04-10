@@ -314,14 +314,18 @@ class AddDogView(PermissionRequiredMixin, CreateView):
     
 class DogDetailView(View):
     def get(self, request, chip_id, *args, **kwargs):
-       
         dog = get_object_or_404(Dog, chip_id=chip_id)
         return render(request, 'dog_detail.html', {'dog': dog})
-    def post(self, request, dog_id, *args, **kwargs):
-        if (dog := Dog.objects.filter(chip_id=dog_id, owner=request.user).first() is None):
+    def post(self, request, chip_id, *args, **kwargs):
+        if (dog := Dog.objects.filter(chip_id=chip_id, owner=request.user).first() is None):
             messages.error(request, 'You are not authorized to delete this dog.')
             return redirect('profile')
-        dog = get_object_or_404(Dog, chip_id=dog_id)
+        dog = get_object_or_404(Dog, chip_id=chip_id)
+        dog_bookings = Booking.objects.filter(dog=dog)
+        for booking in dog_bookings:
+            booking.status = 'declined'
+            booking.client_notes = 'Dog has been deleted.'
+            booking.save()
         dog.delete()
         messages.success(request, 'Dog has been successfully deleted.')
         return redirect('profile')

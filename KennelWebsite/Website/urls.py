@@ -34,6 +34,7 @@ urlpatterns = [
     path('owner/dashboard/', OwnerDashboardView.as_view(), name='owner_dashboard'),
     path('update-booking-status/<int:booking_id>/', UpdateBookingStatusView.as_view(), name='update_booking_status'),
     path('dogs/add-dog/', AddDogView.as_view(), name='add_dog'),
+    path('dogs/<str:chip_id>/delete/', DogDetailView.as_view(), name='delete_dog'),
     path('dogs/<str:chip_id>/', DogDetailView.as_view(), name='dog_detail'),
     path('dogs/<str:chip_id>/update/', DogUpdateView.as_view(), name='update_dog'),
     path('about/', AboutView.as_view(), name='about'),
