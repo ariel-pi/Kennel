@@ -10,10 +10,12 @@ class Profile(models.Model):
         return self.user.username
 
 class BoardingHouse(models.Model):
+    DEFAULT_MAP_LOCATION = r"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3487844.11496039!2d32.44041769453558!3d31.383867609568092!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1500492432a7c98b%3A0x6a6b422013352cba!2sIsrael!5e0!3m2!1sen!2sil!4v1712740457423!5m2!1sen!2sil"
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     description = models.TextField()
     location = models.CharField(max_length=255)
+    map_location = models.URLField(default=DEFAULT_MAP_LOCATION, max_length=1000)
     contact_details = models.CharField(max_length=255)
     available_spaces = models.PositiveIntegerField()
 

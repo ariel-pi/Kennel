@@ -11,6 +11,7 @@
             {% for boardinghouse, rate_info in boardinghouses_and_rates.items %}
                 <article>
                     <h3>{{ boardinghouse.name }}</h3>
+                    <iframe src="{{ boardinghouse.map_location }}" width="400" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                     <p>{{ boardinghouse.description }}</p>
                     <p>Location: {{ boardinghouse.location }}</p>
                     <p>Available Spaces: {{ boardinghouse.available_spaces }}</p>

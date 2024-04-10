@@ -238,7 +238,23 @@ footer p {
     display: block;
     font-size: 1rem;
 }
+@media (min-width: 801px) {
+    section {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* Three equal-width columns */
+        gap: 2rem; /* Gap between columns */
+    }
 
+    article {
+        flex: 0 0 calc(33.33% - 2rem); /* Each article takes up 33.33% of the available width minus some gap */
+        margin-right: 2rem; /* Add some space between articles */
+        margin-bottom: 2rem; /* Add some space below each row of articles */
+    }
+
+    article:nth-child(3n) {
+        margin-right: 0; /* Remove right margin for every third article to prevent it from extending beyond the row */
+    }
+}
 @media (max-width: 800px) {
     section {
         flex-direction: column;   
@@ -299,4 +315,8 @@ th, td {
 .cropped-image img {
 width: 100%; /* Make sure the image fills its container */
 height: auto; /* Maintain aspect ratio */
+}
+#map { /* Define a size for your map container */
+    height: 400px;
+    width: 100%;
 }
