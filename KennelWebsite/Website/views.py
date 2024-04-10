@@ -27,7 +27,7 @@ class HomeView(View):
     def _highest_rated_boardinghouses():
         #TODO: implement this method
         boardinghouses = BoardingHouse.objects.all()
-        return boardinghouses[:2]
+        return boardinghouses[:3]
 
     def get(self, request, *args, **kwargs):
         featured_boardinghouses = HomeView._highest_rated_boardinghouses()

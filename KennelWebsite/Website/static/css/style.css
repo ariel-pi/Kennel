@@ -291,3 +291,12 @@ th, td {
     padding: 8px; /* Add padding to cells for better readability */
     text-align: left; /* Align text to the left within cells */
 }
+.cropped-image {
+    width: 100%; /* Set desired width */
+    overflow: hidden; /* Hide overflowing parts */
+}
+
+.cropped-image img {
+width: 100%; /* Make sure the image fills its container */
+height: auto; /* Maintain aspect ratio */
+}

@@ -7,6 +7,7 @@ from django.contrib.auth import views as auth_views
 from Website.views import RegisterView, ProfileView, UpdateUsernameView, UpdatePasswordView
 
 urlpatterns = [
+    path('', include('Website.urls')),
     path('admin/', admin.site.urls),
     path('Website/', include('Website.urls')),
     path('accounts/', include('django.contrib.auth.urls')),

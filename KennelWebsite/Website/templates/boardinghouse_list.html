@@ -7,9 +7,9 @@
         <p>Find the perfect place for your dog's stay.</p>
 
         <h2>Boarding Houses</h2>
-        <ul>
+        <section>
             {% for boardinghouse, rate_info in boardinghouses_and_rates.items %}
-                <li>
+                <article>
                     <h3>{{ boardinghouse.name }}</h3>
                     <p>{{ boardinghouse.description }}</p>
                     <p>Location: {{ boardinghouse.location }}</p>
@@ -17,7 +17,7 @@
                     <p>Rate: {{ rate_info.0 }}</p>
                     <p>Rated By: {{ rate_info.1 }} users</p>
                     <a href="{% url 'boardinghouse_detail' boardinghouse.id %}">View Details</a>
-                </li>
+                </article>
             {% endfor %}
-        </ul>
+        </section>
 {% endblock %}
