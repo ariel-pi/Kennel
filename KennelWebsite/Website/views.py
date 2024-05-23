@@ -23,7 +23,19 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.views.generic.edit import CreateView
 from django.core.exceptions import PermissionDenied
+from django.contrib.auth.views import LoginView
+from django.urls import reverse_lazy
 
+
+class CustomLoginView(LoginView):
+
+    def get_success_url(self):
+        print("Check1###")
+        user = self.request.user
+        if user.groups.filter(name='Boardinghouse Owners').exists():
+            return reverse_lazy('owner_dashboard')
+        else:
+            return reverse_lazy('home')
 
 class HomeView(View):
     def _highest_rated_boardinghouses():

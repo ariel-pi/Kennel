@@ -51,7 +51,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'KennelWebsite.urls'
-LOGIN_REDIRECT_URL = '/Website/'
+# LOGIN_REDIRECT_URL = '/Website/'
 LOGOUT_REDIRECT_URL = '/Website/'
 
 TEMPLATES = [
