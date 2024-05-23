@@ -9,8 +9,9 @@
         <li>{{ boarding_house.name }} - {{ boarding_house.description }}</li>
         <form method="post" action="{% url 'delete_boardinghouse' boarding_house.id %}">
           {% csrf_token %}
-          <button type="submit" class = "small_button">Delete</button>
+          <button type="submit" class = "delete_button">Delete</button>
         </form>
+        <a href="{% url 'update_boardinghouse' boarding_house.id %}" class = "small_button">Update</a>
       {% endfor %}
     </ul>
   {% else %}

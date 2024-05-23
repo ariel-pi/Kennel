@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Boarding House Details</title>
+</head>
+<body>
+    <h1>Update Boarding House Details</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="id_name">Name:</label><br>
+        {{ form.name }}<br><br>
+        <label for="id_description">Description:</label><br>
+        {{ form.description }}<br><br>
+        <label for="id_location">Location:</label><br>
+        {{ form.location }}<br><br>
+        <label for="id_map_location">Map Location:</label><br>
+        {{ form.map_location }}<br><br>
+        <label for="id_contact_details">Contact Details:</label><br>
+        {{ form.contact_details }}<br><br>
+        <label for="id_available_spaces">Available Spaces:</label><br>
+        {{ form.available_spaces }}<br><br>
+        <button type="submit" class="small_button">Update</button>
+    </form>
+</body>
+</html>
+{% endblock %}

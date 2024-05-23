@@ -22,16 +22,28 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.views.generic.edit import CreateView
+from django.core.exceptions import PermissionDenied
+
 
 class HomeView(View):
     def _highest_rated_boardinghouses():
-        #TODO: implement this method
         boardinghouses = BoardingHouse.objects.all()
-        return boardinghouses[:3]
+        boardinghouses_and_avarege_reates = []
+        
+        for boardinghouse in boardinghouses:
+            reviews = Review.objects.filter(boarding_house=boardinghouse)
+            amount_of_reviews = len(reviews)
+            if reviews:
+                average_rating = sum([review.rating for review in reviews]) / len(reviews)
+            else:
+                average_rating = 0
+            boardinghouses_and_avarege_reates.append((boardinghouse, average_rating, amount_of_reviews))
+        
+        return boardinghouses_and_avarege_reates[:3]
 
     def get(self, request, *args, **kwargs):
         featured_boardinghouses = HomeView._highest_rated_boardinghouses()
-        return render(request, 'home.html', {'featured_boardinghouses': HomeView._highest_rated_boardinghouses()})
+        return render(request, 'home.html', {'featured_boardinghouses': featured_boardinghouses})
 
 class AboutView(View):
     def get(self, request, *args, **kwargs):
@@ -252,6 +264,29 @@ class DeleteBoardinghouseView(PermissionRequiredMixin, View):
         messages.success(request, 'Boardinghouse has been successfully deleted.')
         return redirect('owner_dashboard')
     
+class UpdateBoardinghouseView(PermissionRequiredMixin, UpdateView):
+    permission_required = ('Website.change_boardinghouse')
+    model = BoardingHouse
+    form_class = BoardingHouseForm
+    template_name = 'update_boardinghouse.html'
+    def get_success_url(self):
+        print("get_success_url")
+        return reverse_lazy('boardinghouse_detail', kwargs={'boardinghouse_id': self.object.id})
+
+    def get_object(self, queryset=None):
+        boardinghouse_id = self.kwargs.get('boardinghouse_id')
+        boardinghouse = get_object_or_404(BoardingHouse, id=boardinghouse_id)
+
+        # Check if the user is the owner of the boardinghouse
+        if boardinghouse.user != self.request.user:
+            print("You are not the owner of the boardinghouse")
+            # You might want to handle this situation, like raising PermissionDenied
+            # or redirecting the user to a different page.
+            # For now, let's raise PermissionDenied
+            raise PermissionDenied("You are not the owner of the boardinghouse")
+
+        print("get_object")
+        return boardinghouse
 class AddReviewView(PermissionRequiredMixin, View):
     permission_required = ('Website.add_review')
     def get(self, request, boardinghouse_id, *args, **kwargs):

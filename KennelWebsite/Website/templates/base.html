@@ -31,6 +31,7 @@
         <img src="{% static 'img/logo.png' %}" alt="Logo" class="logo">
         <h1>Dogs Club</h1>
         {% if user.is_authenticated %}
+                <p>Hi, {{user.first_name}}</p>
             
                 <form method="post" action="{% url 'logout' %}">
                     {% csrf_token %}

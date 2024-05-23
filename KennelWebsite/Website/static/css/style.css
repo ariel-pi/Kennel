@@ -285,10 +285,29 @@ footer p {
     margin: 0.5rem;
 }
 
+
 .small_button:hover {
     background: #fff;
     color: #495E57;
     border: 1px solid #495E57;
+}
+  .delete_button {
+    padding: .25rem .5rem; /* Adjust padding as needed */
+    border: 1px solid #ff0000;
+    background-color: #ff0000;
+    border-radius: 5px;
+    font-size: 1rem; /* Adjust font size as needed */
+    display: inline-block;
+    color: #fff;
+    line-height: 20px; /* Adjust line height as needed */
+    margin: 0.5rem;
+}
+
+
+.delete_button:hover {
+    background: #fff;
+    color: #ff0000;
+    border: 1px solid #ff0000;
 }
 .error_text {
     color: red;

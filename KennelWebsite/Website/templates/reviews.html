@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Reviews - Boarding House Reviews
+    Reviews - {{ boardinghouse_name }}
 {% endblock title %}
-    
+
 {% block content %}
 <!DOCTYPE html>
 <html lang="en">
@@ -26,17 +26,17 @@
                 {% csrf_token %}
                 <button type="submit" class = "small_button">Delete Review</button>
             </form>
-        
+
         {% endfor %}
     </ul>
     <h2>All Reviews</h2>
         {% for review in reviews %}
             {% if review.user != user %}
-                
+
             <h3>{{ review.user.username }}</h3>
                 <strong>Rating:</strong> {{ review.rating }}<br>
                 <strong>Review:</strong> {{ review.review }}<br>
-            
+
             {% endif %}
         {% empty %}
             <li>No reviews available.</li>

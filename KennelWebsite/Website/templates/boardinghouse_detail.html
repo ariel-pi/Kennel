@@ -2,19 +2,19 @@
 {% load custom_filters %}
 
 
-{% block title %}{{ boardinghouse.name }} - Dog Boarding{% endblock %}
+{% block title %}{{ boardinghouse.name }} - Dogs Club{% endblock %}
 
 {% block content %}
-    
+
         <h2>{{ boardinghouse.name }}</h2>
         <p>{{ boardinghouse.description }}</p>
         <p>Location: {{ boardinghouse.location }}</p>
         <p> Contact Detailes: {{boardinghouse.contact_details}}</p>
         <p>Available Spaces: {{ boardinghouse.available_spaces }}</p>
-    
+
     <a href="{% url 'reviews' boardinghouse.id %}">View Reviews</a>
 
-    
+
         <h2>Book a Stay</h2>
         {% if error %}
             <p class = "error_text">{{ error }}</p>
@@ -25,9 +25,9 @@
                 {{ form.as_p }}
                 <button type="submit" class="small_button">Book Now</button>
             </form>
-        
+
         {% elif not request.user|has_group:"Boardinghouse Owners" %}
             <p><a href="{% url 'login' %}">Log in</a> to book a stay.</p>
         {% endif %}
-    
+
 {% endblock %}

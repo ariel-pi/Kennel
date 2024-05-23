@@ -3,7 +3,7 @@
 {% load custom_filters %}
 
 
-{% block title %}User Profile - Dog Boarding{% endblock %}
+{% block title %}User Profile - Dogs Club{% endblock %}
 
 {% block content %}
     <!DOCTYPE html>
@@ -19,16 +19,16 @@
             <p>Last Name: {{ profile.user.last_name }}</p>
             <p>Email: {{ profile.user.email }}</p>
 
-            
+
         </div>
-        
-        
-        
+
+
+
         <h3>Edit username and password</h3>
-        
+
         <a href="{% url 'update_username' %}" >Update Username</a></br>
         <a href="{% url 'update_password' %}">Update Password</a></br>
-        
+
         {% if profile.user|has_group:"Customers" %}
             <h2>My Dogs</h2>
             <ul>
@@ -36,7 +36,7 @@
                     <li>
                         <strong>{{ dog.name }}</strong> <br>
                         <a href="{% url 'dog_detail' dog.chip_id %}">View Details</a>
-                    
+
                     </li>
                 {% empty %}
                     <li>No dogs available.</li>
@@ -44,7 +44,7 @@
             </ul>
             <a href="{% url 'add_dog' %}" class = "small_button">Add Dog</a>
         {% endif %}
-            
+
     </body>
     </html>
 {% endblock %}
