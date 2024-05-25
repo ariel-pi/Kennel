@@ -20,11 +20,12 @@
             <p class = "error_text">{{ error }}</p>
         {% endif %}
         {% if request.user|has_group:"Customers" %}
-            <form method="post" action="{% url 'booking' boardinghouse.id %}">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="small_button">Book Now</button>
-            </form>
+        <form method="post" action="{% url 'booking' boardinghouse.id %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="small_button">Book Now</button>
+        </form>
+        
 
         {% elif not request.user|has_group:"Boardinghouse Owners" %}
             <p><a href="{% url 'login' %}">Log in</a> to book a stay.</p>

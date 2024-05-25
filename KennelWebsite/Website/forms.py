@@ -3,14 +3,20 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, Password
 from django.contrib.auth.models import User
 from .models import Booking,  BoardingHouse ,Profile, Dog
 from django.contrib.auth.models import User, Group
+from django import forms
+from django.forms import DateInput
+from django.core.exceptions import ValidationError
 
 
 class BookingForm(forms.ModelForm):
+    check_in_date = forms.DateField(widget=DateInput(attrs={'type': 'date'}))
+    check_out_date = forms.DateField(widget=DateInput(attrs={'type': 'date'}))
+
     def __init__(self, *args, **kwargs):
-        print("kwargs",kwargs)
-        user = kwargs.pop('user')  # Retrieve the user from kwargs
+        user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
-        self.fields['dog'].queryset = Dog.objects.filter(owner=user)  # Filter the dogs based on the user
+        self.fields['dog'].queryset = Dog.objects.filter(owner=user)
+
     class Meta:
         model = Booking
         fields = ['check_in_date', 'check_out_date', 'client_notes', 'dog']
@@ -70,6 +76,13 @@ class BoardingHouseForm(forms.ModelForm):
         model = BoardingHouse
         fields = ['name', 'description', 'location', 'contact_details', 'available_spaces']
 
+    def clean_contact_details(self):
+        contact_details = self.cleaned_data.get('contact_details')
+        # Check if contact_details is a valid phone number with 9 or 10 digits
+        if not (contact_details.isdigit() and len(contact_details) in [9, 10]):
+            raise ValidationError("Please enter a valid phone number with 9 or 10 digits.")
+        return contact_details
+    
 class DogForm(forms.ModelForm):
     class Meta:
         model = Dog
