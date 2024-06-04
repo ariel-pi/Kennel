@@ -82,6 +82,7 @@ class ProfileView(LoginRequiredMixin, View):
 
         profile = request.user.profile
         form = ProfileForm(instance=profile)
+        print
         dogs = Dog.objects.filter(owner=request.user)
         print("dogs:",dogs)
         return render(request, 'profile.html', {'form': form, 'profile': profile, 'dogs': dogs})

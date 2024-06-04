@@ -14,6 +14,11 @@
     <body>
         <h2>My Profile</h2>
         <div>
+            {% if profile.profile_picture %}
+                <img src="{{ profile.profile_picture.url }}" alt="Profile Picture">
+            {% else %}
+                <p><i>No profile picture available</i></p>
+            {% endif %}
             <p><b>Username: {{ profile.user.username }}</b></p>
             <p>First Name: {{ profile.user.first_name }}</p>
             <p>Last Name: {{ profile.user.last_name }}</p>
