@@ -33,7 +33,7 @@ class CustomLoginView(LoginView):
         print("Check1###")
         user = self.request.user
         if user.groups.filter(name='Boardinghouse Owners').exists():
-            return reverse_lazy('owner_dashboard')
+            return reverse_lazy('profile')
         else:
             return reverse_lazy('home')
 
@@ -79,22 +79,20 @@ class RegisterView(View):
 
 class ProfileView(LoginRequiredMixin, View):
     def get(self, request):
-
         profile = request.user.profile
         form = ProfileForm(instance=profile)
-        print
         dogs = Dog.objects.filter(owner=request.user)
-        print("dogs:",dogs)
         return render(request, 'profile.html', {'form': form, 'profile': profile, 'dogs': dogs})
 
     def post(self, request):
-        #TODO: remove the profile picture if the user wants to
-        # or if the user wants to update the profile picture
-        form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        profile = request.user.profile
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
             return redirect('profile')
-        return render(request, 'profile.html', {'form': form})
+        dogs = Dog.objects.filter(owner=request.user)
+        return render(request, 'profile.html', {'form': form, 'profile': profile, 'dogs': dogs})
+
 
 class UpdateUsernameView(LoginRequiredMixin, View):
     def get(self, request):

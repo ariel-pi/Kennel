@@ -2,54 +2,67 @@
 {% load static %}
 {% load custom_filters %}
 
-
 {% block title %}User Profile - Dogs Club{% endblock %}
 
 {% block content %}
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>My Profile</title>
-    </head>
-    <body>
-        <h2>My Profile</h2>
-        <div>
-            {% if profile.profile_picture %}
-                <img src="{{ profile.profile_picture.url }}" alt="Profile Picture">
-            {% else %}
-                <p><i>No profile picture available</i></p>
-            {% endif %}
-            <p><b>Username: {{ profile.user.username }}</b></p>
-            <p>First Name: {{ profile.user.first_name }}</p>
-            <p>Last Name: {{ profile.user.last_name }}</p>
-            <p>Email: {{ profile.user.email }}</p>
-
-
-        </div>
-
-
-
-        <h3>Edit username and password</h3>
-
-        <a href="{% url 'update_username' %}" >Update Username</a></br>
-        <a href="{% url 'update_password' %}">Update Password</a></br>
-
-        {% if profile.user|has_group:"Customers" %}
-            <h2>My Dogs</h2>
-            <ul>
-                {% for dog in dogs %}
-                    <li>
-                        <strong>{{ dog.name }}</strong> <br>
-                        <a href="{% url 'dog_detail' dog.chip_id %}">View Details</a>
-
-                    </li>
-                {% empty %}
-                    <li>No dogs available.</li>
-                {% endfor %}
-            </ul>
-            <a href="{% url 'add_dog' %}" class = "small_button">Add Dog</a>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Profile</title>
+    <style>
+        #image-upload-form {
+            display: none;
+        }
+    </style>
+    <script>
+        function toggleImageUploadForm() {
+            var form = document.getElementById('image-upload-form');
+            var button = document.getElementById('change-image-button');
+            form.style.display = 'block';
+            button.style.display = 'none';
+        }
+    </script>
+</head>
+<body>
+    <h2>My Profile</h2>
+    <div>
+        {% if profile.profile_picture %}
+            <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" width=30%>
+        {% else %}
+            <p><i>No profile picture available</i></p>
         {% endif %}
+        <p></p>
+        <button id="change-image-button" onclick="toggleImageUploadForm()" class="small_button">Change Picture</button>
+        <form id="image-upload-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="id_profile_picture">Profile picture:</label>
+            <input type="file" name="profile_picture" id="id_profile_picture">
+            <button type="submit" class="small_button">Change my profile picture!</button>
+        </form>
+        <p><b>Username: {{ profile.user.username }}</b></p>
+        <p>First Name: {{ profile.user.first_name }}</p>
+        <p>Last Name: {{ profile.user.last_name }}</p>
+        <p>Email: {{ profile.user.email }}</p>
+    </div>
+   
+    <h3>Edit username and password</h3>
+    <a href="{% url 'update_username' %}">Update Username</a></br>
+    <a href="{% url 'update_password' %}">Update Password</a></br>
 
-    </body>
-    </html>
+    {% if profile.user|has_group:"Customers" %}
+        <h2>My Dogs</h2>
+        <ul>
+            {% for dog in dogs %}
+                <li>
+                    <strong>{{ dog.name }}</strong> <br>
+                    <a href="{% url 'dog_detail' dog.chip_id %}">View Details</a>
+                </li>
+            {% empty %}
+                <li>No dogs available.</li>
+            {% endfor %}
+        </ul>
+        <a href="{% url 'add_dog' %}" class="small_button">Add Dog</a>
+    {% endif %}
+</body>
+</html>
 {% endblock %}
